@@ -56,6 +56,7 @@ always @ (st) begin
             begin
                 pc <= pc + 1;
                 ir <= dr[7:6];
+                ar <= {1'b0,dr[5:2]};
                 rd <= 1'b0;
             end
         id:
@@ -63,8 +64,8 @@ always @ (st) begin
                 acc <= buf_in;
             else if(ir == 2'b01)
                 buf_out <= acc;
-            else
-                ar <= {1'b0,dr[5:2]}; 
+            //else if(ir == 2'b10 || ir == 2'b11)
+             //   ar <= {1'b0,dr[5:2]}; 
         ex_mem:
             begin
                 buff <= acc;
