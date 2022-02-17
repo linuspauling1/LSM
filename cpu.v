@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 `include "eprom.v"
 `include "sram.v"
 
@@ -6,7 +8,7 @@ module cpu(
     inout [7:0] data_bus,
     output [4:0] adr_bus,
     input [7:0] buff_in,
-    output [7:0] buff_out,
+    output reg [7:0] buff_out,
     output reg wr,rd
 );
 
@@ -58,7 +60,7 @@ always @(st) begin
                 if(ir == 2'b00)
                     acc <= buff_in;
                 else if(ir == 2'b01)
-                   buf_out <= acc;
+                    buff_out <= acc;
                 else
                     begin
                         ar[4] <= 1'b0;
@@ -94,14 +96,21 @@ always @* begin
         st_nxt = s1;
 end
 
-always (posedge clk, posedge rst) begin
+always @(posedge clk or posedge rst) begin
     if(rst)
-        st <= s1;
+        begin
+            st <= s1;
+            pc <= 4'd0;
+            ir <= 2'd0;
+            ar <= 5'd0;
+            dr <= 8'd0;
+            rd <= 1'd0;
+        end
     else
         st <= st_nxt;
 end
 
-endmodule;
+endmodule
 
 module top_cpu(
     input clk, rst,
@@ -116,7 +125,7 @@ wire w_rd,w_wr;
 cpu i_cpu(
     .clk(clk),
     .rst(rst),
-    .data_buss(w_db),
+    .data_bus(w_db),
     .adr_bus(w_ab),
     .buff_in(buff_in),
     .buff_out(buff_out),
@@ -128,8 +137,8 @@ eprom i_eprom(
     .clk(clk),
     .cs(w_ab[4]),
     .rd(w_rd),
-    .dr(data_bus),
-    .ar(w_ab)      
+    .dr(w_db),
+    .ar(w_ab[3:0])      
 );
 
 sram i_sram(
@@ -137,7 +146,7 @@ sram i_sram(
     .cs(~w_ab[4]),
     .rd(w_rd),
     .wr(w_wr),
-    .ar(w_ab),
+    .ar(w_ab[3:0]),
     .dr(w_db)
 );
 
@@ -147,7 +156,7 @@ module tb;
 
 output reg clk, rst;
 output reg [7:0] buff_in;
-wire buff_out;
+wire [7:0] buff_out;
 
 top_cpu i(
     .clk(clk),.rst(rst),
@@ -163,12 +172,17 @@ end
 
 initial begin
     rst = 1'b1;
-    #8 rst = 1'b0;
+    #3 rst = 1'b0;
 end
 
 initial begin
     buff_in = 8'd7;
-    #192 buff_in = 8'd9;//3*2*8*5 - 5
+    #159 buff_in = 8'd9;//2*2*8*5 + 15
 end
 
-endmodule;
+initial begin
+    $dumpfile("tb.vcd");
+    $dumpvars(0,tb);
+end
+
+endmodule
