@@ -2,163 +2,173 @@
 `include "sram.v"
 
 module cpu(
-    input clk,rst,
-    inout [7:0] dr,
-    output reg [4:0] ar,
-    output reg rd,wr,
-    input [7:0] buf_in,
-    output reg [7:0 ] buf_out
+    input clk, rst,
+    inout [7:0] data_bus,
+    output [4:0] adr_bus,
+    input [7:0] buff_in,
+    output [7:0] buff_out,
+    output reg wr,rd
 );
 
-localparam if1 = 2'b00;
-localparam if2 = 2'b01;
-localparam id = 2'b10;
-localparam ex_mem = 2'b11;
+localparam s1 = 3'd0;
+localparam s2 = 3'd1;
+localparam s3 = 3'd2;
+localparam s4 = 3'd3;
+localparam s5 = 3'd4;
+localparam s6 = 3'd5;
+localparam s7 = 3'd6;
+localparam s8 = 3'd7;
 
-reg [1:0] st;
-reg [1:0] st_nxt;
-
-reg [1:0] ir;
-reg [3:0] pc;
 reg [7:0] acc;
-reg [7:0] buff;
+reg [7:0] dr;
+reg [4:0] ar;
+reg [3:0] pc;
+reg [1:0] ir;
 
-assign dr = (wr & !rd) ? buff : 'hz;
+assign adr_bus = ar;
+assign data_bus = (wr & !rd) ? dr : 'hz;
 
-initial begin
-    pc = 4'd0;
-    st = 2'd0;
-end
+reg [2:0] st;
+reg [2:0] st_nxt;
 
-always @ * begin
+always @(st) begin
     case(st)
-        if1:
-            st_nxt = if2;        
-        if2:
-            st_nxt = id;
-        id:
-            st_nxt = ex_mem;
-        ex_mem:
-            st_nxt = if1;
-    endcase
-end
-
-always @ (st) begin
-    case(st)
-        if1:
+        s1:
             begin
                 ar[3:0] <= pc;
                 ar[4] <= 1'b1;
-                rd <= 1'b1;
                 wr <= 1'b0;
             end
-        if2:
+        s2:
             begin
+                rd <= 1'b1;
                 pc <= pc + 1;
-                ir <= dr[7:6];
-                ar <= {1'b0,dr[5:2]};
-                rd <= 1'b0;
             end
-        id:
-            if(ir == 2'b00)
-                acc <= buf_in;
-            else if(ir == 2'b01)
-                buf_out <= acc;
-            //else if(ir == 2'b10 || ir == 2'b11)
-             //   ar <= {1'b0,dr[5:2]}; 
-        ex_mem:
+        s3:
             begin
-                buff <= acc;
+                dr <= data_bus;
+            end
+        s4:
+            begin
+                rd <= 1'b0;
+                ir <= dr[7:6];
+            end
+        s5:
+            begin
+                if(ir == 2'b00)
+                    acc <= buff_in;
+                else if(ir == 2'b01)
+                   buf_out <= acc;
+                else
+                    begin
+                        ar[4] <= 1'b0;
+                        ar[3:0] <= dr[5:2];
+                    end
+            end
+        s6:
+            begin
                 if(ir == 2'b10)
-                    wr <= 1'b1;
+                    dr <= acc;
                 else if(ir == 2'b11)
                     rd <= 1'b1;
             end
-    endcase
+        s7:
+            begin
+                if(ir == 2'b10)
+                    wr <= 1'b1;
+                else if(ir == 2'b11)
+                    dr <= data_bus;
+            end
+        s8:
+            begin
+                if(ir == 2'b11)
+                    acc <= dr;
+            end
+    endcase    
 end
 
-always @(posedge clk or posedge rst) begin
+always @* begin
+    if(st != s8)
+        st_nxt = st + 1;
+    else
+        st_nxt = s1;
+end
+
+always (posedge clk, posedge rst) begin
     if(rst)
-        pc <= 4'd0;
+        st <= s1;
     else
         st <= st_nxt;
 end
 
-endmodule
+endmodule;
 
-//top
-module final_cut(
+module top_cpu(
     input clk, rst,
-    input [7:0] buf_in,
-    output [7:0] buf_out
+    input [7:0] buff_in,
+    output [7:0] buff_out
 );
 
+wire [4:0] w_ab;
+wire [7:0] w_db;
 wire w_rd,w_wr;
-wire [4:0] w_ar;
-wire [7:0] w_dr;
-
-eprom i_eprom(
-    .clk(clk),
-    .dr(w_dr),
-    .ar(w_ar[3:0]),
-    .cs(w_ar[4]),
-    .rd(w_rd)
-);
-
-sram i_sram(
-    .clk(clk),
-    .dr(w_dr),
-    .ar(w_ar[3:0]),
-    .cs(~w_ar[4]),
-    .rd(w_rd),
-    .wr(w_wr)
-);
 
 cpu i_cpu(
     .clk(clk),
     .rst(rst),
-    .dr(w_dr),
-    .ar(w_ar),
+    .data_buss(w_db),
+    .adr_bus(w_ab),
+    .buff_in(buff_in),
+    .buff_out(buff_out),
+    .rd(w_rd),
+    .wr(w_wr)
+);
+
+eprom i_eprom(
+    .clk(clk),
+    .cs(w_ab[4]),
+    .rd(w_rd),
+    .dr(data_bus),
+    .ar(w_ab)      
+);
+
+sram i_sram(
+    .clk(clk),
+    .cs(~w_ab[4]),
     .rd(w_rd),
     .wr(w_wr),
-    .buf_in(buf_in),
-    .buf_out(buf_out)
+    .ar(w_ab),
+    .dr(w_db)
 );
 
 endmodule
 
-//tb
-module final_cut_tb;
+module tb;
 
 output reg clk, rst;
-output reg [7:0] buf_in;
-wire [7:0] buf_out;
+output reg [7:0] buff_in;
+wire buff_out;
 
-final_cut i(
+top_cpu i(
     .clk(clk),.rst(rst),
-    .buf_in(buf_in),
-    .buf_out(buf_out)
+    .buff_in(buff_in),
+    .buff_out(buff_out)
 );
 
 initial begin
-    $dumpfile("final_cut_tb.vcd");
-    $dumpvars(0,final_cut_tb);
-end
-
-initial begin
     clk = 1'b0;
-    repeat (2*4*10)
-    #50 clk = ~clk;
+    repeat(9*2*8)
+    #5 clk = ~clk;
 end
 
 initial begin
     rst = 1'b1;
-    #80 rst = 1'b0;
+    #8 rst = 1'b0;
 end
 
 initial begin
-    buf_in = 8'd7;
-    #880 buf_in = 8'd9;
+    buff_in = 8'd7;
+    #192 buff_in = 8'd9;//3*2*8*5 - 5
 end
 
-endmodule
+endmodule;
