@@ -49,16 +49,15 @@ Microprocesorul prezinta o [unitate de control](#unitatea-de-control), [cateva r
 #### **Unitatea de control**:
 - este modelata ca un automat sincron cu stari finite de tip Moore, aceasta are opt stari, fiecare stare reprezentand in fapt un stagiu de executie al unei instructiuni. Un stagiu este executat in cadrul unei perioade de tact, cu alte cuvinte, stagiile se modifica la fiecare ciclu de tact. Detalieri cu privire la stagiile de executie pentru o instructiune sunt oferite in diagrama de mai jos (in tabel).
 
-|  S1           |  S2        |  S3             |  S4           |  S5                 |  S6               |  S7               |  S8         |
-| ----          | ----       | ----            | ----          | ----                | ----              | ----              | ----        |
-| AR[3:0] <= PC | PC <= PC+1 |  DR <= data_bus | RD <= 0       | if(IR == 00)        | if(IR == 10)      | if(IR == 10)      | if(IR == 11)|
-| AR[4] <= 1    | RD <= 1    |                 | IR <= DR[7:6] |  ACC <= BUFF_IN     |  DR <= ACC        |  WR <= 1          |  ACC <= DR  |
-| WR <= 0       |            |                 |               | else if(IR == 01)   | else if(IR == 11) | else if(IR == 11) |             |
-|               |            |                 |               |  BUFF_OUT <=ACC     |  RD <= 1          |  DR <= data_bus   |             |
-|               |            |                 |               | else                |                   |                   |             |
-|               |            |                 |               |  AR[4] <= 0         |                   |                   |             |
-|               |            |                 |               |  AR[3:0] <= DR[5:2] |                   |                   |             |
-|               |            |                 |               |                     |                   |                   |             |
+|  S1       |  S2    |  S3        |  S4       |  S5              |  S6            |  S7           |  S8      |
+| ----      | ----   | ----       | ----      | ----             | ----           | ----          | ----     |
+|AR[3:0]<=PC|PC<=PC+1|DR<=data_bus|RD<=0      |if(IR==00)        |if(IR==10)      |if(IR==10)     |if(IR==11)|
+|AR[4]<=1   |RD<=1   |            |IR<=DR[7:6]| ACC<=BUFF_IN     | DR<=ACC        | WR<=1         | ACC<=DR  |
+|WR<=0      |        |            |           |else if(IR==01)   |else if(IR==11) |else if(IR==11)|          |
+|           |        |            |      	  | BUFF_OUT<=ACC    | RD<=1          | DR<=data_bus  |          |
+|           |        |            |           |else              |                |               |          |
+|           |        |            |           | AR[4]<=0         |                |               |          |
+|           |        |            |           | AR[3:0]<=DR[5:2] |                |               |          |
 
 #### **Registrele sunt:**
 - **PC** (program counter, pe 4 biti): numaratorul de program, indica adresa din memorie (cea care contine codul de executat) de la care va trebui sa fie executata urmatoarea instructiune; intrucat setul de instructiuni implementat de aceasta masina nu contine si instructiuni pentru sarituri in program, acesta se va autoincrementa la fiecare ciclu masina, fara a suferi alte operatii. La activarea semnalului de resetare acesta ia valoarea zero;
