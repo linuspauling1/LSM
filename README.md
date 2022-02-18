@@ -10,7 +10,7 @@ Modelarea unui sistem de calcul primitiv capabil de executia unor instructiuni c
 
 
 ## **2. Setul de instructiuni**
-Instructiunile care pot fi executate de o astfle de masina de calcul sunt codificate folosind opt biti, ele impartindu-se in doua clase:
+Instructiunile care pot fi executate de o astfel de masina de calcul sunt codificate folosind opt biti, ele impartindu-se in doua clase:
 * de memorie: ***load*** si ***store***
 * cu perifericele: ***input*** si ***output***.
 
@@ -23,7 +23,7 @@ Codurile pentru fiecare instructiune sunt:
 
 Instructiunile pentru lucrul cu perifericele nu prezinta niciun operand (se poate vedea in figura de mai jos):
 - *input*: preia datele de la intrare si le depoziteaza in registrul acumulator
-- *output*: aifseaza la iesire datele din registrul acumulator.
+- *output*: afiseaza la iesire datele din registrul acumulator.
 
 | rolul bitului        | opcode | opcode | don't care | don't care | don't care | don't care | don't care | don't care |
 | ----------------     | ------ | ------ | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |
@@ -40,7 +40,7 @@ Instructiunile pentru lucrul cu memoria contin in formatul lor pe langa un cod p
 ## **3. Arhitectura**
 Sistemul este alcatuit din trei componente:
 - [un microprocesor](#microprocesorul),
-- [o memorie EPROM](#memoria-pentru-porgam) care contine instructiunile care vor fi executate,
+- [o memorie EPROM](#memoria-pentru-program) care contine instructiunile care vor fi executate,
 -  [o memorie SRAM](#memoria-pentru-date) folosita pentru scrierea si citirea datelor in timpul executiei unui program,
 
 toate aceste elemente fiind interconectate prin intermediul magistralelor de date (*data_bus*) si de adrese (*address_bus*).
@@ -72,13 +72,13 @@ Microprocesorul prezinta o [unitate de control](#unitatea-de-control), [cateva r
 - ***clock***: semnalul de tact al masinii de calcul.
 
 Toate semnalele sunt active in ``1``, comutarea starii se face pe ``frontul crescator`` al semnalului de tact.
-### **Memoria pentru porgam**
+### **Memoria pentru program**
 Memoria pentru program este un cip ***EPROM*** avand *dimensiunea de 16 biti* (2 octeti), cu *dimensiunea cuvantului de un octet*. Prezinta semnale pentru **citire** (read), **selectia cipului** (chip select), respectiv un **semnal de tact**, fiind memorie sincrona. Cand semnalul de *chip select* este inactiv circuitul nu opereaza, magistralele de date fiind situate in *impedenta ridicata* si nicio operatie nu va avea loc, daca este activ, depinde de starea semnalului de *read*, astfel, daca **read** este activ, circuitul va situa pe magistrala de date valoarea de la adresa specificata prin magistrala de adrese. Scrierea acestui cip este implementata la initializarea modulului verilog, in practica, facandu-se dupa stergearea inforatiei din aceasta, sub actiunea radiatiilor UV.
 ### **Memoria pentru date**
-Memoria pentru date este un cip **SRAM** avand *dimensiunea de 16 biti* (2 octeti), cu *dimensiunea cuvantului de un octet*. Prezinta semnale pentru **citire** (read), **scriere** (write), **selectia cipului** (chip select), respectiv un **semnal de tact**, fiind memorie sincrona. Cand semnalul de *chip select* este inactiv circuitul nu opereaza, magistralele de date fiind situate in *impedenta ridicata* si nicio operatie nu va avea loc, daca este activ, depinde de starea semnalelor de *read* si de *write*, astfel, daca **read** este activ si **write** este inactiv, circuitul va situa pe magistrala de date valoarea de la adresa specificata prin magistrala de adrese, daca **read** este inactiv si **write** activ, circuitul va situa magistrala de date in *impedanta ridicata* fiind pregatit sa primeasca informatii din exterior, urmand sa scrie la adresa de memorie indicata pe magsitrala de adrese valoarea primita.
+Memoria pentru date este un cip **SRAM** avand *dimensiunea de 16 biti* (2 octeti), cu *dimensiunea cuvantului de un octet*. Prezinta semnale pentru **citire** (read), **scriere** (write), **selectia cipului** (chip select), respectiv un **semnal de tact**, fiind memorie sincrona. Cand semnalul de *chip select* este inactiv circuitul nu opereaza, magistralele de date fiind situate in *impedenta ridicata* si nicio operatie nu va avea loc, daca este activ, depinde de starea semnalelor de *read* si de *write*, astfel, daca **read** este activ si **write** este inactiv, circuitul va situa pe magistrala de date valoarea de la adresa specificata prin magistrala de adrese, daca **read** este inactiv si **write** activ, circuitul va situa magistrala de date in *impedanta ridicata* fiind pregatit sa primeasca informatii din exterior, urmand sa scrie la adresa de memorie indicata pe magistrala de adrese valoarea primita.
 
 ## **4. Simulare**
-Proiectul contine trei fisiere sursa scrise in limbajul de sinteza si simulare hardware verilog. Fisierele au nume sugestive, astfel ca *``cpu.v``* contine codul sursa pentru generarea microprocesorului, *``erpom.v``* contine codul sursa pentru generarea memoriei de program, *EPROM*, iar *``sram.v``* contine codul sursa pentru generarea memoriei de date, *SRAM*. De asemenea, acesta pune la dispozitie un fisier testbench care demonstreaza functinoarea sistemului pentru rularea uni cod scris in memoria *EPROM*, codul pentru modulul de test fiind tot in fisierul *``cpu.v``*. Codul reprezinta un program de opt instructiuni:
+Proiectul contine trei fisiere sursa scrise in limbajul de sinteza si simulare hardware verilog. Fisierele au nume sugestive, astfel ca *``cpu.v``* contine codul sursa pentru generarea microprocesorului, *``erpom.v``* contine codul sursa pentru generarea memoriei de program, *EPROM*, iar *``sram.v``* contine codul sursa pentru generarea memoriei de date, *SRAM*. De asemenea, acesta pune la dispozitie un fisier testbench care demonstreaza functinoarea sistemului pentru rularea unui cod scris in memoria *EPROM*, codul pentru modulul de test fiind tot in fisierul *``cpu.v``*. Codul reprezinta un program de opt instructiuni:
 ```
 INPUT
 STORE 5
@@ -91,7 +91,7 @@ OUTPUT
 ```
 .
 
-Instructiunile in cod masina aferente programului anterior pot fi accesate la o urmarie atenta a fisierului corespunzator sintezei si simularii circuitului *EPROM* (*``erpom.v``*).\
+Instructiunile in cod masina aferente programului anterior pot fi accesate la o urmarie atenta a fisierului corespunzator sintezei si simularii circuitului *EPROM* (*``erpom.v``*).
 |![cod masina](pictures/cod.png)|
 |:--:|
 |<i>Cod masina</i>|
