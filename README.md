@@ -70,6 +70,8 @@ Microprocesorul prezinta o [unitate de control](#unitatea-de-control), [cateva r
 - ***write***: semnal pentru scriere, anunta circuitul cu care comunica faptul ca urmeaza sa ii ofere date;
 - ***reset***: semnal de reset asincron, reseteaza toate registrele, iar automatul sincron este adus in starea initiala;
 - ***clock***: semnalul de tact al masinii de calcul.
+
+Toate semnalele sunt active in ``1``, comutarea starii se face pe ``frontul crescator`` al semnalului de tact.
 ### **Memoria pentru porgam**
 Memoria pentru program este un cip ***EPROM*** avand *dimensiunea de 16 biti* (2 octeti), cu *dimensiunea cuvantului de un octet*. Prezinta semnale pentru **citire** (read), **selectia cipului** (chip select), respectiv un **semnal de tact**, fiind memorie sincrona. Cand semnalul de *chip select* este inactiv circuitul nu opereaza, magistralele de date fiind situate in *impedenta ridicata* si nicio operatie nu va avea loc, daca este activ, depinde de starea semnalului de *read*, astfel, daca **read** este activ, circuitul va situa pe magistrala de date valoarea de la adresa specificata prin magistrala de adrese. Scrierea acestui cip este implementata la initializarea modulului verilog, in practica, facandu-se dupa stergearea inforatiei din aceasta, sub actiunea radiatiilor UV.
 ### **Memoria pentru date**
@@ -90,12 +92,12 @@ OUTPUT
 .
 
 Instructiunile in cod masina aferente programului anterior pot fi accesate la o urmarie atenta a fisierului corespunzator sintezei si simularii circuitului *EPROM* (*``erpom.v``*).\
-|![cod masina](cod.png)|
+|![cod masina](pictures/cod.png)|
 |:--:|
 |<i>Cod masina</i>|
 
 ## **5. Note**
 Pentru simularea sistemului digital este nevoie de o unealta care poate sa compileze si genereze diagramele din cod de verilog. Pentru realizarea proiectului a fost folosit simulatorul [icarus-verilog](http://iverilog.icarus.com/). Pentru generarea undelor a fost folosit programul [GTKWave](http://gtkwave.sourceforge.net/). Ca sa fie mai usor de obinut un fisier care sa contina diagramele de faza este pus la dispozitie un script, ``run``, care contine comenzile necesare pentru ca icarus-verilog sa  genereze formele de unda, fiind de ajuns o simpla rulare a acestuia. Dupa executia scriptului vor fi generate fisiere care pot fi nedorite, extensiile acestora fiind notate in fisierul ``.gitignore``. Este posibil ca scriptul sa nu fie executabil in alte sisteme de operare in afara de *cele bazate pe Unix*, astfel ca, pentru *o versiune de Windows*, de exemplu, recomandarea ar fi sa se adauge extensia specifica executabilelor (``.exe``).
-| ![forme de unda](wave.png) |
+| ![forme de unda](pictures/wave.png) |
 |:--:|
 |<i>Frome de unda</i>|
